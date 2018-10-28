@@ -1,0 +1,14 @@
+{
+    "name": "bartoszlewandowski/blue-rest-api",
+    "type": "metapackage",
+    "require": {
+        "phpunit/phpunit": "^7.4"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Bartosz Lewandowski",
+            "email": "lewandowskibartosz@icloud.com"
+        }
+    ]
+}
