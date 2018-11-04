@@ -4,6 +4,12 @@
     "require": {
         "phpunit/phpunit": "^7.4"
     },
+    "autoload": {
+        "psr-4": {
+            "BlueRestAPI\\": "src",
+            "BlueRestAPI\\Tests\\": "tests"
+        }
+    },
     "license": "MIT",
     "authors": [
         {
