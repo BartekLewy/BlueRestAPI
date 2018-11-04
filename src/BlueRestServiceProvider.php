@@ -3,6 +3,7 @@
 namespace BlueRestAPI;
 
 use BlueRestAPI\Controller\ItemController;
+use BlueRestAPI\Model\ItemRepository;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -24,5 +25,8 @@ class BlueRestServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->make(ItemController::class);
+        $this->app->bind(ItemController::class, function ($app) {
+            return new ItemController($app->make(ItemRepository::class));
+        });
     }
 }

@@ -3,7 +3,9 @@
 namespace BlueRestAPI\Controller;
 
 use App\Http\Controllers\Controller;
+use BlueRestAPI\Model\Exception\ItemNotFoundException;
 use BlueRestAPI\Model\Item;
+use BlueRestAPI\Model\ItemRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -14,18 +16,30 @@ use Illuminate\Http\Request;
 class ItemController extends Controller
 {
     /**
+     * @var ItemRepository
+     */
+    private $repository;
+
+    /**
+     * ItemController constructor.
+     * @param ItemRepository $repository
+     */
+    public function __construct(ItemRepository $repository)
+    {
+        $this->repository = $repository;
+    }
+
+    /**
      * @param $id
      * @return JsonResponse
      */
     public function show($id): JsonResponse
     {
-        $item = Item::find($id);
-
-        if (!$item) {
-            return new JsonResponse(['error' => 'This item does not exists'], JsonResponse::HTTP_NOT_FOUND);
+        try {
+            return new JsonResponse($this->repository->findById((int)$id));
+        } catch (ItemNotFoundException $exception) {
+            return new JsonResponse(['error' => $exception->getMessage()], JsonResponse::HTTP_NOT_FOUND);
         }
-
-        return new JsonResponse($item);
     }
 
     /**
