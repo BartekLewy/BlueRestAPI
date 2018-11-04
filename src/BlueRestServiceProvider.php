@@ -16,10 +16,6 @@ class BlueRestServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(__DIR__ . '/../routes.php');
         $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
 
-//        $this->publishes([
-//            __DIR__ . '/../config/package.php' => config_path('package.php')
-//        ], 'config');
-
         $this->publishes([
             __DIR__ . '/../database/migrations/' => database_path('migrations')
         ], 'migrations');
