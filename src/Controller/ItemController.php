@@ -47,8 +47,7 @@ class ItemController extends Controller
      */
     public function showAll(): JsonResponse
     {
-        $items = Item::all();
-        return response()->json($items);
+        return response()->json($this->repository->findAll());
     }
 
     /**
