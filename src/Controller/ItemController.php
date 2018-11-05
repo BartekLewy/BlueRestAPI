@@ -94,7 +94,7 @@ class ItemController extends Controller
             'amount' => 'required'
         ]);
 
-        if (!$validator->fails()) {
+        if ($validator->fails()) {
             return new JsonResponse(['error' => 'Name and amount are required!'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
@@ -107,7 +107,7 @@ class ItemController extends Controller
         } catch (ItemNotFoundException $exception) {
             return new JsonResponse(['error' => $exception->getMessage()], JsonResponse::HTTP_NOT_FOUND);
         } catch (CannotUpdateItemException $exception) {
-            return new JsonResponse(['error' => $exception->getMessage(), JsonResponse::HTTP_NOT_MODIFIED]);
+            return new JsonResponse(['error' => $exception->getMessage()], JsonResponse::HTTP_NOT_MODIFIED);
         }
     }
 

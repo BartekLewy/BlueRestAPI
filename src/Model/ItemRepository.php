@@ -78,8 +78,8 @@ class ItemRepository
     public function update(int $id, string $name = null, int $amount = null): Item
     {
         $item = $this->findById($id);
-        $item->name = $name ?? $item->name;
-        $item->amount = $amount ?? $item->amount;
+        $item->name = $name ? $name : $item->name;
+        $item->amount = $amount ? $amount : $item->amount;
         $item->save();
 
         if (!$item->wasChanged()) {
