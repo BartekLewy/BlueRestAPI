@@ -1,13 +1,9 @@
 {
     "name": "bartoszlewandowski/blue-rest-api",
     "type": "metapackage",
-    "require": {
-        "phpunit/phpunit": "^7.4"
-    },
     "autoload": {
         "psr-4": {
-            "BlueRestAPI\\": "src",
-            "BlueRestAPI\\Tests\\": "tests"
+            "BlueRestAPI\\": "src"
         }
     },
     "license": "MIT",

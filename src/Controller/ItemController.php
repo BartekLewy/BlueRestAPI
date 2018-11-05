@@ -3,11 +3,14 @@
 namespace BlueRestAPI\Controller;
 
 use App\Http\Controllers\Controller;
+use BlueRestAPI\Model\Exception\CannotCreateItemException;
+use BlueRestAPI\Model\Exception\CannotRemoveItemException;
+use BlueRestAPI\Model\Exception\CannotUpdateItemException;
 use BlueRestAPI\Model\Exception\ItemNotFoundException;
-use BlueRestAPI\Model\Item;
 use BlueRestAPI\Model\ItemRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 /**
  * Class ItemController
@@ -56,19 +59,28 @@ class ItemController extends Controller
      */
     public function create(Request $request): JsonResponse
     {
-        $item = new Item();
-        $item->name = $request->name;
-        $item->amount = $request->amount;
-        $item->save();
+        $validator = Validator::make($request->all(), [
+            'name' => 'required',
+            'amount' => 'required',
+        ]);
 
-        if ($item->id) {
-            return new JsonResponse([
-                'message' => 'Item has been created',
-                'resourceId' => $item->id
-            ], JsonResponse::HTTP_CREATED);
+        if ($validator->fails()) {
+            return new JsonResponse(['error' => 'Name and amount are required!'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
-        return new JsonResponse(['error' => 'Sorry, something went wrong and i could not create item'], JsonResponse::HTTP_BAD_REQUEST);
+        try {
+            $item = $this->repository->create($request->name, $request->amount);
+            if ($item->id) {
+                return new JsonResponse([
+                    'message' => 'Item has been created',
+                    'resourceId' => $item->id
+                ], JsonResponse::HTTP_CREATED);
+            }
+        } catch (ItemNotFoundException $exception) {
+            return new JsonResponse(['error' => $exception->getMessage()], JsonResponse::HTTP_NOT_FOUND);
+        } catch (CannotCreateItemException $exception) {
+            return new JsonResponse(['error' => $exception->getMessage()], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
@@ -77,21 +89,26 @@ class ItemController extends Controller
      */
     public function update(Request $request): JsonResponse
     {
-        /** @var Item $item */
-        $item = Item::find($request->id);
+        $validator = Validator::make($request->all(), [
+            'name' => 'required',
+            'amount' => 'required'
+        ]);
 
-        if (!$item) {
-            return new JsonResponse(['error' => 'This item does not exist'], JsonResponse::HTTP_NOT_FOUND);
+        if (!$validator->fails()) {
+            return new JsonResponse(['error' => 'Name and amount are required!'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
-        $item->name = $request->name ?? $item->name;
-        $item->amount = $request->amount ?? $item->amount;
-        $item->save();
-
-        if ($item->wasChanged()) {
-            return new JsonResponse(['message' => 'Item has been changed']);
+        try {
+            $item = $this->repository->update($request->id, $request->name, $request->amount);
+            return new JsonResponse([
+                'message' => 'Item has been changed',
+                'resourceId' => $item->id
+            ]);
+        } catch (ItemNotFoundException $exception) {
+            return new JsonResponse(['error' => $exception->getMessage()], JsonResponse::HTTP_NOT_FOUND);
+        } catch (CannotUpdateItemException $exception) {
+            return new JsonResponse(['error' => $exception->getMessage(), JsonResponse::HTTP_NOT_MODIFIED]);
         }
-        return new JsonResponse([], JsonResponse::HTTP_NOT_MODIFIED);
     }
 
     /**
@@ -101,17 +118,13 @@ class ItemController extends Controller
      */
     public function destroy($id): JsonResponse
     {
-        /** @var Item $item */
-        $item = Item::find($id);
-
-        if (!$item) {
-            return new JsonResponse(['error' => 'This item does not exist'], JsonResponse::HTTP_NOT_FOUND);
-        }
-        $item->delete();
-
-        if ($item->trashed()) {
+        try {
+            $this->repository->delete($id);
             return new JsonResponse(['message' => 'Item has been removed properly from storage']);
+        } catch (ItemNotFoundException $exception) {
+            return new JsonResponse(['error' => $exception->getMessage()], JsonResponse::HTTP_NOT_FOUND);
+        } catch (CannotRemoveItemException $exception) {
+            return new JsonResponse(['error' => $exception->getMessage()], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
-        return new JsonResponse(['error' => 'Sorry, something went wrong. Remember, name and amount fields cannot be empty!'], JsonResponse::HTTP_BAD_REQUEST);
     }
 }
