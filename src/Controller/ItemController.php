@@ -50,7 +50,7 @@ class ItemController extends Controller
      */
     public function showAll(): JsonResponse
     {
-        return response()->json($this->repository->findAll());
+        return new JsonResponse($this->repository->findAll());
     }
 
     /**
